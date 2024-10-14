@@ -3,8 +3,8 @@ import * as Comlink from 'comlink';
 import {
   AttestationObject,
   decode_and_verify,
-  Attributes,
   Attribute,
+  NotarizedData,
 } from 'tlsn-js';
 import { CheckCircle, XCircle } from 'lucide-react';
 
@@ -36,8 +36,8 @@ export function VerifyAttributeAttestation(): ReactElement {
   );
   const [decodedAttestation, setDecodedAttestation] =
     useState<AttestationObject | null>(null);
-  const [decodedTLSData, setDecodedTLSData] = useState<null | any>(null);
-  const [attrAttestations, setAttrAttestations] = useState<null | Attributes>(
+
+  const [notarizedData, setNotarizedData] = useState<NotarizedData | null>(
     null,
   );
 
@@ -51,19 +51,15 @@ export function VerifyAttributeAttestation(): ReactElement {
 
       setDecodedAttestation(attestationObject_);
 
-      const { isValid, decodedAppData, attributes } = await decode_and_verify(
+      const { is_valid, notarized_data } = await decode_and_verify(
         attestationObject_,
         verify_attestation_signature,
       );
-      if (!isValid) {
-        return setError('Signature is invalid');
-      }
 
-      setIsAttrAttestationValid(isValid);
-      setAttrAttestations(attributes);
-      setDecodedTLSData(decodedAppData);
+      if (!is_valid) return setError('Signature is invalid');
+      setNotarizedData(notarized_data);
+      setIsAttrAttestationValid(is_valid);
     } catch (e) {
-      console.log('ahi', e);
       setIsAttrAttestationValid(false);
       return setError('Attestation is invalid');
     }
@@ -125,12 +121,10 @@ export function VerifyAttributeAttestation(): ReactElement {
               </div>
             )}
 
-            {isAttrAttestationValid === true && decodedAttestation && (
+            {isAttrAttestationValid && notarizedData && decodedAttestation && (
               <CardAttestation
                 notaryUrl={decodedAttestation.meta.notaryUrl}
-                domain="api.x.com"
-                attributes={attrAttestations}
-                decodedTLSData={decodedTLSData}
+                notarizedData={notarizedData}
               />
             )}
           </div>
@@ -252,24 +246,23 @@ other example : twitter
 
 function CardAttestation({
   notaryUrl,
-  domain,
-  attributes,
-  decodedTLSData,
+  notarizedData,
 }: {
   notaryUrl: string;
-  domain: string;
-  attributes: Attributes | null;
-  decodedTLSData: any;
+  notarizedData: NotarizedData;
 }) {
-  console.log('attributes', attributes);
+  console.log('decodedTLSData', notarizedData);
   const [showDetails, setShowDetails] = useState(false);
+
+  const { attributes, decoded_data } = notarizedData;
 
   return (
     <div className="flex justify-center items-center mb-4">
       <Card className="w-full max-w-md">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
-            Attestation for {domain}
+            Attestation{' '}
+            {decoded_data.hostname ? 'for ' + decoded_data.hostname : ''}
           </CardTitle>
           <div className="flex items-center rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-600">
             <CheckCircle2 className="mr-1 h-3 w-3" />
@@ -278,7 +271,7 @@ function CardAttestation({
         </CardHeader>
         <CardContent>notary: {notaryUrl}</CardContent>
         <CardContent>
-          {showDetails && !attributes && <StylizedJSON data={decodedTLSData} />}
+          {showDetails && !attributes && <StylizedJSON data={decoded_data} />}
 
           {attributes && (
             <div className="flex flex-wrap gap-2">
