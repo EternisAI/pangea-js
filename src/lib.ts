@@ -114,7 +114,7 @@ export async function decode_and_verify(
 
   const { attributes, bytes_data } = notarized_data;
 
-  console.log('attributes', attributes);
+  //console.log('attributes', attributes);
 
   if (!bytes_data) throw new Error('binary_data is null');
   if (!signature) throw new Error('signature is null');
@@ -165,12 +165,10 @@ export async function decodeAttestation(
   hex_notary_key: string;
   notarized_data: NotarizedData;
 }> {
-  console.log('decodeAttestation');
+  //console.log('decodeAttestation', attestationObject.applicationData);
   const signature = parseSignature(attestationObject.signature);
   const binaryAppData = attestationObject.applicationData;
   const decodedAppData = decodeAppData(attestationObject.applicationData);
-
-  console.log('decodedAppData', decodedAppData);
 
   const { notaryUrl } = attestationObject.meta;
   const notary = NotaryServer.from(notaryUrl);
@@ -228,7 +226,7 @@ export function decodeAppData(hexString: string) {
     decodedString += String.fromCharCode(parseInt(hexString.substr(i, 2), 16));
   }
 
-  console.log('decodedString', decodedString);
+  //console.log('decodedString', decodedString);
 
   const [request, response_header, response_body] =
     decodedString.split('\r\n\r\n');
