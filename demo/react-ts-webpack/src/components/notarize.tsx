@@ -21,7 +21,7 @@ const EXPECTED_PCRS = {
   '2': 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
 };
 const notaryUrl = 'https://notary.eternis.ai';
-const websocketUrl = 'wss://inn1.eternis.ai:55688';
+const websocketUrl = 'wss://websockify.cluster.eternis.ai:55688';
 
 //const websocketUrl = 'ws://localhost:55688';
 const request = requests.dummy;
