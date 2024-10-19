@@ -196,13 +196,13 @@ export interface InitOutput {
   readonly prover_setup: (a: number, b: number, c: number) => number;
   readonly prover_send_request: (a: number, b: number, c: number, d: number) => number;
   readonly prover_notarize: (a: number) => number;
+  readonly __wbg_signedsession_free: (a: number, b: number) => void;
+  readonly signedsession_serialize: (a: number, b: number) => void;
+  readonly signedsession_deserialize: (a: number, b: number, c: number) => void;
   readonly __wbg_verifier_free: (a: number, b: number) => void;
   readonly verifier_new: (a: number) => number;
   readonly verifier_connect: (a: number, b: number, c: number) => number;
   readonly verifier_verify: (a: number) => number;
-  readonly __wbg_signedsession_free: (a: number, b: number) => void;
-  readonly signedsession_serialize: (a: number, b: number) => void;
-  readonly signedsession_deserialize: (a: number, b: number, c: number) => void;
   readonly init_logging: (a: number) => void;
   readonly verify_attestation_document: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
   readonly verify_attestation_signature: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
@@ -217,14 +217,14 @@ export interface InitOutput {
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_export_3: WebAssembly.Table;
-  readonly _dyn_core__ops__function__FnMut_____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h258471eb2859baec: (a: number, b: number) => void;
-  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__hd94a43ea9f93d329: (a: number, b: number, c: number) => void;
-  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h1b66998208973583: (a: number, b: number, c: number) => void;
-  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h57c1013a2651556f: (a: number, b: number, c: number) => void;
+  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h81741d45610e535f: (a: number, b: number, c: number) => void;
+  readonly _dyn_core__ops__function__FnMut_____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h38321d71e7b3d7ab: (a: number, b: number) => void;
+  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h5e7637d0579c4ba0: (a: number, b: number, c: number) => void;
+  readonly _dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h3121530f87ba8d5e: (a: number, b: number, c: number) => void;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_exn_store: (a: number) => void;
-  readonly wasm_bindgen__convert__closures__invoke2_mut__h351523fa39949d06: (a: number, b: number, c: number, d: number) => void;
+  readonly wasm_bindgen__convert__closures__invoke2_mut__h4fd158e1df532404: (a: number, b: number, c: number, d: number) => void;
   readonly __wbindgen_thread_destroy: (a?: number, b?: number, c?: number) => void;
   readonly __wbindgen_start: (a: number) => void;
 }
