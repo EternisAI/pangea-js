@@ -271,8 +271,6 @@ function CardAttestation({
         </CardHeader>
         <CardContent>notary: {notaryUrl}</CardContent>
         <CardContent>
-          {showDetails && !attributes && <StylizedJSON data={decoded_data} />}
-
           {attributes && (
             <div className="flex flex-wrap gap-2">
               {attributes.map((attr: Attribute) => (
@@ -288,7 +286,7 @@ function CardAttestation({
           )}
         </CardContent>
 
-        {!attributes && (
+        {
           <CardFooter className="flex justify-between">
             <button
               className="text-blue-600"
@@ -297,7 +295,8 @@ function CardAttestation({
               {showDetails ? 'Hide' : 'View data'}
             </button>
           </CardFooter>
-        )}
+        }
+        {showDetails && <StylizedJSON data={decoded_data} />}
       </Card>
     </div>
   );
