@@ -77,25 +77,29 @@ export async function decode_and_verify(
   hex_notary_key: string;
   notarized_data: NotarizedData;
 }> {
-  const { notarized_data, signature, hex_notary_key } =
+  console.log('decode_and_verify', attestationObject);
+  const { notarized_data, hex_notary_key } =
     await decodeAttestation(attestationObject);
+  const { signature } = attestationObject;
+  console.log('decoded_data', notarized_data, hex_notary_key);
 
   const { attributes, bytes_data } = notarized_data;
 
-  //console.log('attributes', attributes);
-
   if (!bytes_data) throw new Error('binary_data is null');
-  if (!signature) throw new Error('signature is null');
+  if (!attestationObject.signature) throw new Error('signature is null');
 
   let is_valid = true;
   if (attributes) {
     for (const attribute of attributes) {
+      console.log('attribute', attribute);
       const isValid_ = await verify_signature_function(
         attribute.attribute_hex ?? '',
         attribute.signature,
         hex_notary_key,
         false,
       );
+
+      console.log('isValid_', isValid_);
 
       if (!isValid_) {
         is_valid = false;
@@ -134,13 +138,11 @@ export async function getHexNotaryKey(notaryUrl: string) {
 export async function decodeAttestation(
   attestationObject: AttestationObject,
 ): Promise<{
-  signature: string | null;
   hex_notary_key: string;
   notarized_data: NotarizedData;
 }> {
   //console.log('decodeAttestation', attestationObject.applicationData);
   const binaryAppData = attestationObject.application_data;
-  const signature = parseSignature(attestationObject.signature);
   const decodedAppData = decodeAppData(binaryAppData);
 
   const hex_notary_key = await getHexNotaryKey(
@@ -155,7 +157,6 @@ export async function decodeAttestation(
   if (!attestationObject.attributes)
     return {
       notarized_data,
-      signature,
       hex_notary_key,
     };
 
@@ -168,7 +169,6 @@ export async function decodeAttestation(
   };
   return {
     notarized_data: notarized_data_with_attributes,
-    signature: signature,
     hex_notary_key,
   };
 }
