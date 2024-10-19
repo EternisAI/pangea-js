@@ -289,7 +289,7 @@ function CardAttestation({
         {
           <CardFooter className="flex justify-between">
             <button
-              className="text-blue-600"
+              className="text-blue-600 hover:text-blue-800 hover:bg-blue-100 rounded-md px-2 py-1"
               onClick={() => setShowDetails(!showDetails)}
             >
               {showDetails ? 'Hide' : 'View data'}
