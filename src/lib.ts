@@ -26,6 +26,9 @@ import {
   Attribute,
   DecodedData,
   NotarizedData,
+  NotaryRequest,
+  NotaryConfig,
+  Provider,
 } from './types';
 let LOGGING_LEVEL: LoggingLevel = 'Info';
 
@@ -43,6 +46,9 @@ export type {
   Attribute,
   DecodedData,
   NotarizedData,
+  NotaryRequest,
+  NotaryConfig,
+  Provider,
 };
 
 /**
