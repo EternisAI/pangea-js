@@ -126,6 +126,11 @@ export async function decode_and_verify(
   };
 }
 
+export async function getHexNotaryKey(notaryUrl: string) {
+  const notary = NotaryServer.from(notaryUrl);
+  return pemToRawHex(await notary.publicKey());
+}
+
 export async function decodeAttestation(
   attestationObject: AttestationObject,
 ): Promise<{
@@ -134,15 +139,13 @@ export async function decodeAttestation(
   notarized_data: NotarizedData;
 }> {
   //console.log('decodeAttestation', attestationObject.applicationData);
-  const signature = parseSignature(attestationObject.signature);
   const binaryAppData = attestationObject.application_data;
-  const decodedAppData = decodeAppData(attestationObject.application_data);
+  const signature = parseSignature(attestationObject.signature);
+  const decodedAppData = decodeAppData(binaryAppData);
 
-  const { notaryUrl } = attestationObject.meta ?? {};
-  const notary = NotaryServer.from(notaryUrl ?? '');
-  const notaryKeyPem = await notary.publicKey();
-
-  const hex_notary_key = pemToRawHex(notaryKeyPem);
+  const hex_notary_key = await getHexNotaryKey(
+    attestationObject.meta?.notaryUrl ?? '',
+  );
 
   const notarized_data = {
     bytes_data: binaryAppData,
@@ -213,31 +216,6 @@ export function decodeAppData(hexString: string) {
   return {
     hostname: hostname ?? '',
     request_url,
-    request,
-    response_header,
-    response_body,
-  };
-}
-
-/**
- * Decode the attested bytes tls data which contains request and response
- * @returns {string} The generated nonce.
- */
-export function decodeTLSData(hexString: string) {
-  // Remove any whitespace from the hex string
-  hexString = hexString.replace(/\s/g, '');
-
-  // Decode the hex string to a regular string
-  let decodedString = '';
-  for (let i = 0; i < hexString.length; i += 2) {
-    decodedString += String.fromCharCode(parseInt(hexString.substr(i, 2), 16));
-  }
-
-  // Split the decoded string into request and response
-  const [request, response_header, response_body] =
-    decodedString.split('\r\n\r\n');
-
-  return {
     request,
     response_header,
     response_body,

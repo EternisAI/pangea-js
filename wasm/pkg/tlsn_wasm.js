@@ -2,6 +2,26 @@ import { startWorkers } from './snippets/wasm-bindgen-rayon-3e04391371ad0a8e/src
 
 let wasm;
 
+const heap = new Array(128).fill(undefined);
+
+heap.push(undefined, null, true, false);
+
+function getObject(idx) { return heap[idx]; }
+
+let heap_next = heap.length;
+
+function dropObject(idx) {
+    if (idx < 132) return;
+    heap[idx] = heap_next;
+    heap_next = idx;
+}
+
+function takeObject(idx) {
+    const ret = getObject(idx);
+    dropObject(idx);
+    return ret;
+}
+
 const cachedTextDecoder = (typeof TextDecoder !== 'undefined' ? new TextDecoder('utf-8', { ignoreBOM: true, fatal: true }) : { decode: () => { throw Error('TextDecoder not available') } } );
 
 if (typeof TextDecoder !== 'undefined') { cachedTextDecoder.decode(); };
@@ -20,12 +40,6 @@ function getStringFromWasm0(ptr, len) {
     return cachedTextDecoder.decode(getUint8ArrayMemory0().slice(ptr, ptr + len));
 }
 
-const heap = new Array(128).fill(undefined);
-
-heap.push(undefined, null, true, false);
-
-let heap_next = heap.length;
-
 function addHeapObject(obj) {
     if (heap_next === heap.length) heap.push(heap.length + 1);
     const idx = heap_next;
@@ -33,20 +47,6 @@ function addHeapObject(obj) {
 
     heap[idx] = obj;
     return idx;
-}
-
-function getObject(idx) { return heap[idx]; }
-
-function dropObject(idx) {
-    if (idx < 132) return;
-    heap[idx] = heap_next;
-    heap_next = idx;
-}
-
-function takeObject(idx) {
-    const ret = getObject(idx);
-    dropObject(idx);
-    return ret;
 }
 
 let WASM_VECTOR_LEN = 0;
@@ -225,17 +225,6 @@ function __wbg_adapter_63(arg0, arg1, arg2) {
     wasm._dyn_core__ops__function__FnMut__A____Output___R_as_wasm_bindgen__closure__WasmClosure___describe__invoke__h3121530f87ba8d5e(arg0, arg1, addHeapObject(arg2));
 }
 
-function getArrayU8FromWasm0(ptr, len) {
-    ptr = ptr >>> 0;
-    return getUint8ArrayMemory0().subarray(ptr / 1, ptr / 1 + len);
-}
-
-function passArray8ToWasm0(arg, malloc) {
-    const ptr = malloc(arg.length * 1, 1) >>> 0;
-    getUint8ArrayMemory0().set(arg, ptr / 1);
-    WASM_VECTOR_LEN = arg.length;
-    return ptr;
-}
 /**
 * Initializes logging.
 * @param {LoggingConfig | undefined} [config]
@@ -287,6 +276,18 @@ export function verify_attestation_signature(hex_application_data, hex_raw_signa
     const len2 = WASM_VECTOR_LEN;
     const ret = wasm.verify_attestation_signature(ptr0, len0, ptr1, len1, ptr2, len2, hash_appdata);
     return ret !== 0;
+}
+
+function getArrayU8FromWasm0(ptr, len) {
+    ptr = ptr >>> 0;
+    return getUint8ArrayMemory0().subarray(ptr / 1, ptr / 1 + len);
+}
+
+function passArray8ToWasm0(arg, malloc) {
+    const ptr = malloc(arg.length * 1, 1) >>> 0;
+    getUint8ArrayMemory0().set(arg, ptr / 1);
+    WASM_VECTOR_LEN = arg.length;
+    return ptr;
 }
 
 function handleError(f, args) {
@@ -575,10 +576,6 @@ async function __wbg_load(module, imports) {
 function __wbg_get_imports() {
     const imports = {};
     imports.wbg = {};
-    imports.wbg.__wbindgen_string_new = function(arg0, arg1) {
-        const ret = getStringFromWasm0(arg0, arg1);
-        return addHeapObject(ret);
-    };
     imports.wbg.__wbindgen_object_drop_ref = function(arg0) {
         takeObject(arg0);
     };
@@ -590,6 +587,14 @@ function __wbg_get_imports() {
         }
         const ret = false;
         return ret;
+    };
+    imports.wbg.__wbindgen_string_new = function(arg0, arg1) {
+        const ret = getStringFromWasm0(arg0, arg1);
+        return addHeapObject(ret);
+    };
+    imports.wbg.__wbindgen_error_new = function(arg0, arg1) {
+        const ret = new Error(getStringFromWasm0(arg0, arg1));
+        return addHeapObject(ret);
     };
     imports.wbg.__wbindgen_object_clone_ref = function(arg0) {
         const ret = getObject(arg0);
@@ -637,10 +642,6 @@ function __wbg_get_imports() {
     };
     imports.wbg.__wbindgen_bigint_from_u64 = function(arg0) {
         const ret = BigInt.asUintN(64, arg0);
-        return addHeapObject(ret);
-    };
-    imports.wbg.__wbindgen_error_new = function(arg0, arg1) {
-        const ret = new Error(getStringFromWasm0(arg0, arg1));
         return addHeapObject(ret);
     };
     imports.wbg.__wbindgen_is_string = function(arg0) {
@@ -1119,24 +1120,24 @@ function __wbg_get_imports() {
         const ret = startWorkers(takeObject(arg0), takeObject(arg1), wbg_rayon_PoolBuilder.__wrap(arg2));
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper1362 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 523, __wbg_adapter_54);
+    imports.wbg.__wbindgen_closure_wrapper665 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 179, __wbg_adapter_54);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper1364 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 523, __wbg_adapter_57);
+    imports.wbg.__wbindgen_closure_wrapper667 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 179, __wbg_adapter_57);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper4155 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 2582, __wbg_adapter_60);
+    imports.wbg.__wbindgen_closure_wrapper4151 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 2580, __wbg_adapter_60);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper4564 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 2784, __wbg_adapter_63);
+    imports.wbg.__wbindgen_closure_wrapper4561 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 2782, __wbg_adapter_63);
         return addHeapObject(ret);
     };
-    imports.wbg.__wbindgen_closure_wrapper4565 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 2784, __wbg_adapter_63);
+    imports.wbg.__wbindgen_closure_wrapper4562 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 2782, __wbg_adapter_63);
         return addHeapObject(ret);
     };
 

@@ -123,7 +123,7 @@ export function VerifyAttributeAttestation(): ReactElement {
 
             {isAttrAttestationValid && notarizedData && decodedAttestation && (
               <CardAttestation
-                notaryUrl={decodedAttestation.meta.notaryUrl}
+                notaryUrl={decodedAttestation.meta?.notaryUrl || ''}
                 notarizedData={notarizedData}
               />
             )}
