@@ -246,6 +246,22 @@ function CardAttestation({
           </div>
         </CardHeader>
 
+        <CardContent>
+          {attributes && (
+            <div className="flex flex-wrap gap-2">
+              {attributes.map((attr: Attribute) => (
+                <div
+                  key={attr.attribute_name}
+                  className="inline-flex items-center rounded-full bg-green-500 px-2 py-1 text-base font-medium text-white"
+                >
+                  <CheckCircle2 className="mr-1 h-3 w-3" />
+                  <span>{attr.attribute_name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+
         {decoded_data.semaphore_identity_commitment && (
           <CardContent>
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
@@ -264,22 +280,6 @@ function CardAttestation({
           <p className="mt-1 text-md text-gray-900 font-mono break-all">
             {hex_notary_key}
           </p>
-        </CardContent>
-
-        <CardContent>
-          {attributes && (
-            <div className="flex flex-wrap gap-2">
-              {attributes.map((attr: Attribute) => (
-                <div
-                  key={attr.attribute_name}
-                  className="inline-flex items-center rounded-full bg-green-500 px-2 py-1 text-base font-medium text-white"
-                >
-                  <CheckCircle2 className="mr-1 h-3 w-3" />
-                  <span>{attr.attribute_name}</span>
-                </div>
-              ))}
-            </div>
-          )}
         </CardContent>
 
         {
