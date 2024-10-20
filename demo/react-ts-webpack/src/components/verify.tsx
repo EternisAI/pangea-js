@@ -255,7 +255,7 @@ function CardAttestation({
 
   return (
     <div className="flex justify-center items-center mb-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md  border-2 border-green-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium">
             Attestation{' '}
