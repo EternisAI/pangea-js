@@ -28,6 +28,7 @@ import {
   NotaryConfig,
   Provider,
 } from './types';
+import { SEMAPHORE_IDENTITY_HEADER } from './utils';
 let LOGGING_LEVEL: LoggingLevel = 'Info';
 
 function debug(...args: any[]) {
@@ -136,7 +137,7 @@ export async function getHexNotaryKey(notaryUrl: string) {
 }
 
 /**
- * Decode the attested bytes tls data which contains request and response
+ * Decode the signed  bytes tls data which contains request and response
  * @returns {string} The generated nonce.
  */
 export function decodeAppData(hexString: string) {
@@ -147,14 +148,12 @@ export function decodeAppData(hexString: string) {
     decodedString += String.fromCharCode(parseInt(hexString.substr(i, 2), 16));
   }
 
-  //console.log('decodedString', decodedString);
-
   const [request, response_header, response_body] =
     decodedString.split('\r\n\r\n');
 
   let request_url = '';
   let hostname = '';
-
+  let semaphore_identity_commitment = '';
   try {
     const lines = request.split('\r');
     request_url = lines.filter((line: string) => line.startsWith('GET'))[0];
@@ -165,8 +164,16 @@ export function decodeAppData(hexString: string) {
     }
     request_url = request_url.replace('GET', '').trim();
 
-    // Extract host name from URL
-    // Extract hostname from URL using regex
+    semaphore_identity_commitment = lines.filter((line: string) =>
+      line.includes(SEMAPHORE_IDENTITY_HEADER),
+    )[0];
+
+    if (semaphore_identity_commitment) {
+      semaphore_identity_commitment = semaphore_identity_commitment
+        .split(':')[1]
+        .trim();
+    }
+
     const hostnameMatch = request_url.match(
       /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n?]+)/im,
     );
@@ -182,6 +189,7 @@ export function decodeAppData(hexString: string) {
     request,
     response_header,
     response_body,
+    semaphore_identity_commitment,
   };
 }
 
@@ -199,22 +207,12 @@ export function generateNonce() {
 
 export { verify_attestation_signature };
 
-//input example:"P256(ecdsa::Signature<NistP256>(252C196D7265E1CD53F3F9E7F36465F95A04297F3A4CF7DA9DD0DDBB0FBCC9717299A49F0582E09D17BA140F392232715EF2E87A7FD4F9567D9826DEF5B01CC3))";
-
 export function parseSignature(input: string) {
-  // Regular expression to match the hex signature
   const regex = /\(([\dA-Fa-f]+)\)/;
 
-  // Extract the hex signature
   const match = input.match(regex);
 
-  if (match && match[1]) {
-    // Return the extracted hex signature
-    return match[1];
-  } else {
-    // Return null if no valid signature is found
-    return null;
-  }
+  return match && match[1] ? match[1] : null;
 }
 export async function verify_attestation(
   remote_attestation_base64: string,
@@ -346,6 +344,7 @@ export class Prover {
       headers?: { [key: string]: string };
       body?: any;
     },
+    semaphoreIdentity?: string,
   ): Promise<{
     status: number;
     headers: { [key: string]: string };
@@ -354,6 +353,7 @@ export class Prover {
     const { url, method = 'GET', headers = {}, body } = request;
     const hostname = new URL(url).hostname;
     const headerMap = headerToMap({
+      [SEMAPHORE_IDENTITY_HEADER]: semaphoreIdentity ?? '',
       Host: hostname,
       Connection: 'close',
       ...headers,
