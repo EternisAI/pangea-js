@@ -92,7 +92,7 @@ export function VerifyAttributeAttestation(): ReactElement {
               placeholder={placeholder_object}
             ></textarea>
 
-            <div className="flex justify-center items-center mb-4">
+            <div className="flex justify-center items-center mb-4 mt-4">
               <button
                 onClick={verifyAttestation}
                 disabled={!attestationObject}
