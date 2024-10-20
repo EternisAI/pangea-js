@@ -74,7 +74,6 @@ export async function decode_and_verify(
   hex_notary_key: string;
   decodedAttestation: AttestationObject;
 }> {
-  console.log('decode_and_verify', attestationObject);
   const { signature, application_data, attributes } = attestationObject;
 
   const decodedAttestation: AttestationObject = {
@@ -92,15 +91,12 @@ export async function decode_and_verify(
   let is_valid = true;
   if (attributes) {
     for (const attribute of attributes) {
-      console.log('attribute', attribute);
       const isValid_ = await verify_signature_function(
         attribute.attribute_hex ?? '',
         attribute.signature,
         hex_notary_key,
         false,
       );
-
-      console.log('isValid_', isValid_);
 
       if (!isValid_) {
         is_valid = false;
@@ -389,7 +385,7 @@ export class Prover {
       (attributes: string) => JSON.parse(attributes),
     );
 
-    console.log('signedSession', signedSession);
+    //console.log('signedSession', signedSession);
 
     return signedSession;
   }
