@@ -76,8 +76,8 @@ export function VerifyAttributeAttestation(): ReactElement {
     <div>
       <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
         <div className="p-8">
-          <div className="uppercase tracking-wide text-sm text-indigo-500 font-semibold mb-1">
-            Attestation verification
+          <div className="text-2xl font-bold text-gray-800">
+            Verify your attestation
           </div>
 
           <div className="mt-4">
@@ -236,7 +236,7 @@ function CardAttestation({
     <div className="flex justify-center items-center mb-4">
       <Card className="w-full max-w-md  border-2 border-green-500">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-2xl font-bold text-gray-800">
+          <CardTitle className="text-xl font-bold text-gray-800">
             Attestation{' '}
             {decoded_data.hostname ? 'for ' + decoded_data.hostname : ''}
           </CardTitle>
