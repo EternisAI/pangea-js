@@ -51,8 +51,6 @@ export interface Payload {
   nonce: string | null;
 }
 
-export type Attributes = Attribute[];
-
 /**
  * @param attribute_hex is the hex binary epresentation of the attribute
  * @param attribute_name is the name of the attribute
