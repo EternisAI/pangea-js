@@ -24,7 +24,6 @@ import {
   Payload,
   Attribute,
   DecodedData,
-  NotarizedData,
   NotaryRequest,
   NotaryConfig,
   Provider,
@@ -43,7 +42,6 @@ export type {
   Payload,
   Attribute,
   DecodedData,
-  NotarizedData,
   NotaryRequest,
   NotaryConfig,
   Provider,
@@ -73,17 +71,21 @@ export async function decode_and_verify(
 ): Promise<{
   is_valid: boolean;
   hex_notary_key: string;
-  notarized_data: NotarizedData;
+  decodedAttestation: AttestationObject;
 }> {
   console.log('decode_and_verify', attestationObject);
-  const { notarized_data, hex_notary_key } =
-    await decodeAttestation(attestationObject);
-  const { signature } = attestationObject;
-  console.log('decoded_data', notarized_data, hex_notary_key);
+  const { signature, application_data, attributes } = attestationObject;
 
-  const { attributes, bytes_data } = notarized_data;
+  const decodedAttestation: AttestationObject = {
+    ...attestationObject,
+    application_data_decoded: decodeAppData(attestationObject.application_data),
+  };
 
-  if (!bytes_data) throw new Error('binary_data is null');
+  const hex_notary_key = await getHexNotaryKey(
+    attestationObject.meta?.notaryUrl ?? '',
+  );
+
+  if (!application_data) throw new Error('binary_data is null');
   if (!attestationObject.signature) throw new Error('signature is null');
 
   let is_valid = true;
@@ -107,12 +109,12 @@ export async function decode_and_verify(
     return {
       is_valid,
       hex_notary_key,
-      notarized_data,
+      decodedAttestation,
     };
   } else {
     try {
       is_valid = await verify_signature_function(
-        bytes_data!,
+        application_data!,
         signature!,
         hex_notary_key,
         true,
@@ -124,7 +126,7 @@ export async function decode_and_verify(
   return {
     is_valid,
     hex_notary_key,
-    notarized_data,
+    decodedAttestation,
   };
 }
 
@@ -133,43 +135,6 @@ export async function getHexNotaryKey(notaryUrl: string) {
   return pemToRawHex(await notary.publicKey());
 }
 
-export async function decodeAttestation(
-  attestationObject: AttestationObject,
-): Promise<{
-  hex_notary_key: string;
-  notarized_data: NotarizedData;
-}> {
-  //console.log('decodeAttestation', attestationObject.applicationData);
-  const binaryAppData = attestationObject.application_data;
-  const decodedAppData = decodeAppData(binaryAppData);
-
-  const hex_notary_key = await getHexNotaryKey(
-    attestationObject.meta?.notaryUrl ?? '',
-  );
-
-  const notarized_data = {
-    bytes_data: binaryAppData,
-    decoded_data: decodedAppData,
-    attributes: null,
-  };
-  if (!attestationObject.attributes)
-    return {
-      notarized_data,
-      hex_notary_key,
-    };
-
-  const attributes = attestationObject.attributes;
-
-  const notarized_data_with_attributes = {
-    bytes_data: binaryAppData,
-    decoded_data: decodedAppData,
-    attributes: attributes,
-  };
-  return {
-    notarized_data: notarized_data_with_attributes,
-    hex_notary_key,
-  };
-}
 /**
  * Decode the attested bytes tls data which contains request and response
  * @returns {string} The generated nonce.

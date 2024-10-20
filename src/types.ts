@@ -27,9 +27,10 @@ export interface AttestationObject {
     notaryUrl: string;
     websocketProxyUrl: string;
   };
-  signature: string;
-  application_data: string;
-  attributes: Attribute[];
+  signature: string; //signature of the application_data
+  application_data: string; //hex string representation of bytes data
+  application_data_decoded?: DecodedData;
+  attributes: Attribute[]; //attributes extracted from the application_data
 }
 
 export interface RemoteAttestation {
@@ -51,11 +52,6 @@ export interface Payload {
   nonce: string | null;
 }
 
-/**
- * @param attribute_hex is the hex binary epresentation of the attribute
- * @param attribute_name is the name of the attribute
- * @param signature is the signature of the attribute in bytes or attribute_hex
- */
 export type Attribute = {
   attribute_name: string;
   attribute_hex?: string;
@@ -70,12 +66,6 @@ export type DecodedData = {
   response_body: string;
 };
 
-export type NotarizedData = {
-  bytes_data: string;
-  decoded_data: DecodedData;
-  attributes: Attribute[] | null;
-};
-
 export type NotaryRequest = {
   url: string;
   method: string;
@@ -85,11 +75,6 @@ export type NotaryRequest = {
   websocketProxyUrl: string;
   timestamp: number;
   type: string;
-};
-
-export type TargetPage = {
-  url: string;
-  selector: string;
 };
 
 type HttpMethod =
