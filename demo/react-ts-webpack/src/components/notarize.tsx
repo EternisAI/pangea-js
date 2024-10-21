@@ -20,10 +20,10 @@ const EXPECTED_PCRS = {
   '1': 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
   '2': 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
 };
-// const notaryUrl = 'https://notary.eternis.ai';
-// const websocketUrl = 'wss://websockify.cluster.eternis.ai:55688';
-const websocketUrl = 'ws://localhost:55688';
-const notaryUrl = 'http://localhost:7047';
+const notaryUrl = 'https://notary.eternis.ai';
+const websocketUrl = 'wss://websockify.cluster.eternis.ai:55688';
+//const websocketUrl = 'ws://localhost:55688';
+//const notaryUrl = 'http://localhost:7047';
 
 const request = requests.swapi;
 const { dns, url, method, headers, body } = request;
