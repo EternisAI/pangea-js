@@ -150,16 +150,21 @@ export function decodeAppData(hexString: string) {
   let request_url = '';
   let hostname = '';
   let semaphore_identity_commitment = '';
+  const lines = request.split('\r');
   try {
-    const lines = request.split('\r');
-    request_url = lines.filter((line: string) => line.startsWith('GET'))[0];
+    request_url = lines.filter(
+      (line: string) => line.startsWith('GET') || line.startsWith('POST'),
+    )[0];
 
     const requestUrlParts = request_url.split(' ');
     if (requestUrlParts.length >= 2) {
       request_url = requestUrlParts.slice(0, -1).join(' ').trim();
     }
-    request_url = request_url.replace('GET', '').trim();
-
+    request_url = request_url.replace('GET', '').replace('POST', '').trim();
+  } catch (e) {
+    console.log('decodeAppData: error', e);
+  }
+  try {
     semaphore_identity_commitment = lines.filter((line: string) =>
       line.includes(SEMAPHORE_IDENTITY_HEADER),
     )[0];
@@ -169,13 +174,17 @@ export function decodeAppData(hexString: string) {
         .split(':')[1]
         .trim();
     }
+  } catch (e) {
+    console.log('decodeAppData: error', e);
+  }
 
+  try {
     const hostnameMatch = request_url.match(
       /^(?:https?:\/\/)?(?:[^@\n]+@)?(?:www\.)?([^:\/\n?]+)/im,
     );
     hostname = hostnameMatch ? hostnameMatch[1] : '';
   } catch (e) {
-    console.log('error', e);
+    console.log('decodeAppData: error', e);
   }
 
   // Add hostname to the return object
