@@ -280,6 +280,7 @@ export class Prover {
     maxRecvData?: number;
     id: string;
     commit?: Commit;
+    identity_commitment: string;
   }) {
     const {
       url,
@@ -291,6 +292,7 @@ export class Prover {
       notaryUrl,
       websocketProxyUrl,
       id,
+      identity_commitment,
     } = options;
     const hostname = new URL(url).hostname;
     const notary = NotaryServer.from(notaryUrl);
@@ -309,7 +311,7 @@ export class Prover {
       headers: headerToMap(headers),
       body,
     });
-    const notarized = await prover.notarize();
+    const notarized = await prover.notarize(identity_commitment);
 
     return notarized;
   }
@@ -349,7 +351,6 @@ export class Prover {
       headers?: { [key: string]: string };
       body?: any;
     },
-    semaphoreIdentity?: string,
   ): Promise<{
     status: number;
     headers: { [key: string]: string };
@@ -358,7 +359,6 @@ export class Prover {
     const { url, method = 'GET', headers = {}, body } = request;
     const hostname = new URL(url).hostname;
     const headerMap = headerToMap({
-      [SEMAPHORE_IDENTITY_HEADER]: semaphoreIdentity ?? '',
       Host: hostname,
       Connection: 'close',
       ...headers,
@@ -385,8 +385,9 @@ export class Prover {
     };
   }
 
-  async notarize(): Promise<AttestationObject> {
-    const signedSessionString = await this.#prover.notarize();
+  async notarize(identity_commitment: string): Promise<AttestationObject> {
+    const signedSessionString =
+      await this.#prover.notarize(identity_commitment);
 
     const signedSession = JSON.parse(signedSessionString);
 
