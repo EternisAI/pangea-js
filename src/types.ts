@@ -55,6 +55,7 @@ export interface Payload {
 export type Attribute = {
   attribute_name: string;
   attribute_hex?: string;
+  identity_commitment?: string;
   signature: string;
 };
 
@@ -64,7 +65,6 @@ export type DecodedData = {
   request: string; //contain headers
   response_header: string;
   response_body: string;
-  semaphore_identity_commitment: string;
 };
 
 export type NotaryRequest = {

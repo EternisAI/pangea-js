@@ -61,6 +61,18 @@ function pemToRawHex(pemString: string) {
   return Buffer.from(base64, 'base64').toString('hex').slice(-130);
 }
 
+export function getIdentityCommitments(attributes: Attribute[]): string[] {
+  if (!attributes) return [];
+  else
+    return [
+      ...new Set(
+        attributes
+          .map((attr) => attr.identity_commitment)
+          .filter((commitment): commitment is string => !!commitment),
+      ),
+    ];
+}
+
 export async function decode_and_verify(
   attestationObject: AttestationObject,
   verify_signature_function: (
@@ -85,14 +97,20 @@ export async function decode_and_verify(
     attestationObject.meta?.notaryUrl ?? '',
   );
 
-  if (!application_data) throw new Error('binary_data is null');
-  if (!attestationObject.signature) throw new Error('signature is null');
+  //if (!application_data) throw new Error('binary_data is null');
+  //if (!attestationObject.signature) throw new Error('signature is null');
+
+  const identity_commitments = getIdentityCommitments(attributes);
+  if (identity_commitments.length === 0)
+    throw new Error('No identity commitments found');
+  if (identity_commitments.length > 1)
+    throw new Error('Multiple identity commitments found');
 
   let is_valid = true;
   if (attributes) {
     for (const attribute of attributes) {
       const isValid_ = await verify_signature_function(
-        attribute.attribute_hex ?? '',
+        attribute.attribute_hex ?? '', // concatenate attribute + signature
         attribute.signature,
         hex_notary_key,
         false,
@@ -313,6 +331,7 @@ export class Prover {
     });
     const notarized = await prover.notarize(identity_commitment);
 
+    console.log('notarized', notarized);
     return notarized;
   }
 
@@ -389,6 +408,7 @@ export class Prover {
     const signedSessionString =
       await this.#prover.notarize(identity_commitment);
 
+    console.log('signedSessionString', signedSessionString);
     const signedSession = JSON.parse(signedSessionString);
 
     signedSession.attributes = signedSession.attributes.map(
