@@ -27,8 +27,9 @@ export interface AttestationObject {
     notaryUrl: string;
     websocketProxyUrl: string;
   };
-  signature: string; //signature of the application_data
-  application_data: string; //hex string representation of bytes data
+  notary_public_key: string; // hex representation of notary public key
+  signature: string; //hex representation of signature of the application_data
+  application_data: string; //hex representation of bytes data
   application_data_decoded?: DecodedData;
   attributes: Attribute[]; //attributes extracted from the application_data
 }
@@ -54,7 +55,7 @@ export interface Payload {
 
 export type Attribute = {
   attribute_name: string;
-  attribute_hex?: string;
+  attribute_hex?: string; //TODO: to delete
   identity_commitment?: string;
   signature: string;
 };

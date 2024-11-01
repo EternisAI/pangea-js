@@ -408,8 +408,9 @@ export class Prover {
     const signedSessionString =
       await this.#prover.notarize(identity_commitment);
 
-    console.log('signedSessionString', signedSessionString);
     const signedSession = JSON.parse(signedSessionString);
+
+    console.log('signedSession', signedSession);
 
     signedSession.attributes = signedSession.attributes.map(
       (attributes: string) => JSON.parse(attributes),
