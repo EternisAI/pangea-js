@@ -23,15 +23,17 @@ export type ProofData = {
 
 export interface AttestationObject {
   version?: string;
-  meta?: {
-    notaryUrl: string;
-    websocketProxyUrl: string;
-  };
   notary_public_key: string; // hex representation of notary public key
   signature: string; //hex representation of signature of the application_data
   application_data: string; //hex representation of bytes data
   application_data_decoded?: DecodedData;
   attributes: Attribute[]; //attributes extracted from the application_data
+
+  meta?: {
+    //legacy, to remove
+    notaryUrl: string;
+    websocketProxyUrl: string;
+  };
 }
 
 export interface RemoteAttestation {
