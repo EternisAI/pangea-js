@@ -86,16 +86,14 @@ export async function decode_and_verify(
   hex_notary_key: string;
   decodedAttestation: AttestationObject;
 }> {
-  const { signature, application_data, attributes } = attestationObject;
+  console.log('attestationObject', attestationObject);
+  const { signature, application_data, attributes, notary_public_key } =
+    attestationObject;
 
   const decodedAttestation: AttestationObject = {
     ...attestationObject,
     application_data_decoded: decodeAppData(attestationObject.application_data),
   };
-
-  const hex_notary_key = await getHexNotaryKey(
-    attestationObject.meta?.notaryUrl ?? '',
-  );
 
   //if (!application_data) throw new Error('binary_data is null');
   //if (!attestationObject.signature) throw new Error('signature is null');
@@ -112,7 +110,7 @@ export async function decode_and_verify(
       const isValid_ = await verify_signature_function(
         attribute.attribute_hex ?? '', // concatenate attribute + signature
         attribute.signature,
-        hex_notary_key,
+        notary_public_key,
         false,
       );
 
@@ -123,7 +121,7 @@ export async function decode_and_verify(
     }
     return {
       is_valid,
-      hex_notary_key,
+      hex_notary_key: notary_public_key,
       decodedAttestation,
     };
   } else {
@@ -131,7 +129,7 @@ export async function decode_and_verify(
       is_valid = await verify_signature_function(
         application_data!,
         signature!,
-        hex_notary_key,
+        notary_public_key,
         true,
       );
     } catch (e) {
@@ -140,12 +138,12 @@ export async function decode_and_verify(
   }
   return {
     is_valid,
-    hex_notary_key,
+    hex_notary_key: notary_public_key,
     decodedAttestation,
   };
 }
 
-export async function getHexNotaryKey(notaryUrl: string) {
+export async function getNotaryKeyFromUrl(notaryUrl: string) {
   const notary = NotaryServer.from(notaryUrl);
   return pemToRawHex(await notary.publicKey());
 }
