@@ -73,6 +73,21 @@ export function getIdentityCommitments(attributes: Attribute[]): string[] {
     ];
 }
 
+export function buildSignedData(
+  attribute_name: string,
+  identity_commitment: string,
+) {
+  const attributeBytes = new Uint8Array(Buffer.from(attribute_name ?? ''));
+  const identityCommitmentBytes = new Uint8Array(
+    Buffer.from(identity_commitment ?? '', 'hex'),
+  );
+  const concatenatedBytes = new Uint8Array([
+    ...attributeBytes,
+    ...identityCommitmentBytes,
+  ]);
+  return Buffer.from(concatenatedBytes).toString('hex');
+}
+
 export async function decode_and_verify(
   attestationObject: AttestationObject,
   verify_signature_function: (
@@ -108,7 +123,10 @@ export async function decode_and_verify(
   if (attributes) {
     for (const attribute of attributes) {
       const isValid_ = await verify_signature_function(
-        attribute.attribute_hex ?? '', // concatenate attribute + signature
+        buildSignedData(
+          attribute.attribute_name,
+          attribute.identity_commitment ?? '',
+        ),
         attribute.signature,
         notary_public_key,
         false,
@@ -329,7 +347,6 @@ export class Prover {
     });
     const notarized = await prover.notarize(identity_commitment);
 
-    console.log('notarized', notarized);
     return notarized;
   }
 
@@ -413,8 +430,6 @@ export class Prover {
     signedSession.attributes = signedSession.attributes.map(
       (attributes: string) => JSON.parse(attributes),
     );
-
-    //console.log('signedSession', signedSession);
 
     return signedSession;
   }
