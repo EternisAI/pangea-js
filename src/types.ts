@@ -57,7 +57,6 @@ export interface Payload {
 
 export type Attribute = {
   attribute_name: string;
-  attribute_hex?: string; //TODO: to delete
   identity_commitment?: string;
   signature: string;
 };

@@ -91,7 +91,7 @@ export function buildSignedData(
 export async function decode_and_verify(
   attestationObject: AttestationObject,
   verify_signature_function: (
-    attribute_hex: string,
+    signed_data: string,
     signature: string,
     notary_public_key: string,
     hash_appdata: boolean,
