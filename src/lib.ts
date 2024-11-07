@@ -3,7 +3,7 @@ import initWasm, {
   init_logging,
   LoggingLevel,
   LoggingConfig,
-  SignedSession as WasmSignedSession,
+  AttributeAttestation as WasmSignedSession,
   Transcript,
   verify_attestation_document,
   verify_attestation_signature,
@@ -22,7 +22,6 @@ import {
   AttestationObject,
   RemoteAttestation,
   Payload,
-  Attribute,
   DecodedData,
   NotaryRequest,
   NotaryConfig,
@@ -41,7 +40,6 @@ export type {
   AttestationObject,
   RemoteAttestation,
   Payload,
-  Attribute,
   DecodedData,
   NotaryRequest,
   NotaryConfig,
@@ -59,18 +57,6 @@ function pemToRawHex(pemString: string) {
     .replace('-----END PUBLIC KEY-----', '')
     .replace(/\s/g, '');
   return Buffer.from(base64, 'base64').toString('hex').slice(-130);
-}
-
-export function getIdentityCommitments(attributes: Attribute[]): string[] {
-  if (!attributes) return [];
-  else
-    return [
-      ...new Set(
-        attributes
-          .map((attr) => attr.identity_commitment)
-          .filter((commitment): commitment is string => !!commitment),
-      ),
-    ];
 }
 
 export function buildSignedData(
@@ -102,63 +88,49 @@ export async function decode_and_verify(
   decodedAttestation: AttestationObject;
 }> {
   console.log('attestationObject', attestationObject);
-  const { signature, application_data, attributes, notary_public_key } =
-    attestationObject;
+  const { signature, attributes, notary_public_key } = attestationObject;
 
-  const decodedAttestation: AttestationObject = {
-    ...attestationObject,
-    application_data_decoded: decodeAppData(attestationObject.application_data),
-  };
+  // const decodedAttestation: AttestationObject = {
+  //   ...attestationObject,
+  //   application_data_decoded: decodeAppData(attestationObject.application_data),
+  // };
 
   //if (!application_data) throw new Error('binary_data is null');
   //if (!attestationObject.signature) throw new Error('signature is null');
 
-  const identity_commitments = getIdentityCommitments(attributes);
+  const identity_commitments = attributes[0];
   if (identity_commitments.length === 0)
     throw new Error('No identity commitments found');
   if (identity_commitments.length > 1)
     throw new Error('Multiple identity commitments found');
 
-  let is_valid = true;
-  if (attributes) {
-    for (const attribute of attributes) {
-      const isValid_ = await verify_signature_function(
-        buildSignedData(
-          attribute.attribute_name,
-          attribute.identity_commitment ?? '',
-        ),
-        attribute.signature,
-        notary_public_key,
-        false,
-      );
+  const is_valid = true;
 
-      if (!isValid_) {
-        is_valid = false;
-        break;
-      }
-    }
-    return {
-      is_valid,
-      hex_notary_key: notary_public_key,
-      decodedAttestation,
-    };
-  } else {
-    try {
-      is_valid = await verify_signature_function(
-        application_data!,
-        signature!,
-        notary_public_key,
-        true,
-      );
-    } catch (e) {
-      is_valid = false;
-    }
-  }
+  //TODO: verify signature, using verkey
+
   return {
     is_valid,
     hex_notary_key: notary_public_key,
-    decodedAttestation,
+    decodedAttestation: attestationObject,
   };
+
+  // else {
+  //   try {
+  //     is_valid = await verify_signature_function(
+  //       application_data!,
+  //       signature!,
+  //       notary_public_key,
+  //       true,
+  //     );
+  //   } catch (e) {
+  //     is_valid = false;
+  //   }
+  // }
+  // return {
+  //   is_valid,
+  //   hex_notary_key: notary_public_key,
+  //   decodedAttestation,
+  // };
 }
 
 export async function getNotaryKeyFromUrl(notaryUrl: string) {
@@ -424,12 +396,6 @@ export class Prover {
       await this.#prover.notarize(identity_commitment);
 
     const signedSession = JSON.parse(signedSessionString);
-
-    console.log('signedSession', signedSession);
-
-    signedSession.attributes = signedSession.attributes.map(
-      (attributes: string) => JSON.parse(attributes),
-    );
 
     return signedSession;
   }

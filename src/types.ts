@@ -23,11 +23,9 @@ export type ProofData = {
 
 export interface AttestationObject {
   version?: string;
-  notary_public_key: string; // hex representation of notary public key
-  signature: string; //hex representation of signature of the application_data
-  application_data: string; //hex representation of bytes data
-  application_data_decoded?: DecodedData;
-  attributes: Attribute[]; //attributes extracted from the application_data
+  notary_public_key: string; // hex representation of notary verifying key
+  signature: string; // BBS signature of the list of attributes
+  attributes: string[]; //attributes that were signed
 
   meta?: {
     //legacy, to remove
@@ -54,12 +52,6 @@ export interface Payload {
   user_data: Uint8Array | null;
   nonce: string | null;
 }
-
-export type Attribute = {
-  attribute_name: string;
-  identity_commitment?: string;
-  signature: string;
-};
 
 export type DecodedData = {
   hostname: string;
