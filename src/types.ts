@@ -25,7 +25,7 @@ export interface AttestationObject {
   version?: string;
   notary_public_key: string; // hex representation of notary verifying key
   signature: string; // BBS signature of the list of attributes
-  attributes: string[]; //attributes that were signed
+  attributes: string[]; //attributes that were signed as byte arrays
 
   meta?: {
     //legacy, to remove

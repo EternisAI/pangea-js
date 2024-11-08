@@ -22,6 +22,14 @@ export function verify_attestation_document(attestation_document: string, nonce:
 */
 export function verify_attestation_signature(hex_application_data: string, hex_raw_signature: string, hex_raw_public_key: string, hash_appdata: boolean): boolean;
 /**
+* Builds a BBS proof for the given commitment, attributes, verkey, and signature
+* @param {string} commitment_hex
+* @param {(string)[]} attributes_hex
+* @param {string} verkey_hex
+* @param {string} signature_hex
+*/
+export function build_bbs_proof(commitment_hex: string, attributes_hex: (string)[], verkey_hex: string, signature_hex: string): void;
+/**
 * @param {number} num_threads
 * @returns {Promise<any>}
 */
@@ -30,34 +38,6 @@ export function initThreadPool(num_threads: number): Promise<any>;
 * @param {number} receiver
 */
 export function wbg_rayon_start_worker(receiver: number): void;
-export interface VerifierConfig {
-    id: string;
-    max_sent_data: number | undefined;
-    max_received_data: number | undefined;
-}
-
-export interface ProverConfig {
-    id: string;
-    server_dns: string;
-    max_sent_data: number | undefined;
-    max_recv_data: number | undefined;
-}
-
-export interface CrateLogFilter {
-    level: LoggingLevel;
-    name: string;
-}
-
-export interface LoggingConfig {
-    level: LoggingLevel | undefined;
-    crate_filters: CrateLogFilter[] | undefined;
-    span_events: SpanEvent[] | undefined;
-}
-
-export type SpanEvent = "New" | "Close" | "Active";
-
-export type LoggingLevel = "Trace" | "Debug" | "Info" | "Warn" | "Error";
-
 export type Body = JsonValue;
 
 export type Method = "GET" | "POST" | "PUT" | "DELETE";
@@ -104,6 +84,34 @@ export interface AttestationDocument {
     payload: string | undefined;
     certificate: string | undefined;
 }
+
+export interface VerifierConfig {
+    id: string;
+    max_sent_data: number | undefined;
+    max_received_data: number | undefined;
+}
+
+export interface ProverConfig {
+    id: string;
+    server_dns: string;
+    max_sent_data: number | undefined;
+    max_recv_data: number | undefined;
+}
+
+export interface CrateLogFilter {
+    level: LoggingLevel;
+    name: string;
+}
+
+export interface LoggingConfig {
+    level: LoggingLevel | undefined;
+    crate_filters: CrateLogFilter[] | undefined;
+    span_events: SpanEvent[] | undefined;
+}
+
+export type SpanEvent = "New" | "Close" | "Active";
+
+export type LoggingLevel = "Trace" | "Debug" | "Info" | "Warn" | "Error";
 
 /**
 */
@@ -192,17 +200,18 @@ export class wbg_rayon_PoolBuilder {
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
 export interface InitOutput {
-  readonly __wbg_prover_free: (a: number, b: number) => void;
-  readonly prover_new: (a: number) => number;
-  readonly prover_setup: (a: number, b: number, c: number) => number;
-  readonly prover_send_request: (a: number, b: number, c: number, d: number) => number;
-  readonly prover_notarize: (a: number, b: number, c: number) => number;
   readonly __wbg_attributeattestation_free: (a: number, b: number) => void;
   readonly attributeattestation_serialize: (a: number, b: number) => void;
   readonly attributeattestation_deserialize: (a: number, b: number, c: number) => void;
   readonly init_logging: (a: number) => void;
   readonly verify_attestation_document: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
   readonly verify_attestation_signature: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => number;
+  readonly build_bbs_proof: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number) => void;
+  readonly __wbg_prover_free: (a: number, b: number) => void;
+  readonly prover_new: (a: number) => number;
+  readonly prover_setup: (a: number, b: number, c: number) => number;
+  readonly prover_send_request: (a: number, b: number, c: number, d: number) => number;
+  readonly prover_notarize: (a: number, b: number, c: number) => number;
   readonly __wbg_verifier_free: (a: number, b: number) => void;
   readonly verifier_new: (a: number) => number;
   readonly verifier_connect: (a: number, b: number, c: number) => number;
