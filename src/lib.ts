@@ -6,7 +6,8 @@ import initWasm, {
   AttributeAttestation as WasmSignedSession,
   Transcript,
   verify_attestation_document,
-  verify_attestation_signature,
+  build_bbs_proof,
+  verify_bbs_proof,
   type Commit,
   type Reveal,
   Verifier as WasmVerifier,
@@ -88,7 +89,7 @@ export async function decode_and_verify(
   decodedAttestation: AttestationObject;
 }> {
   console.log('attestationObject', attestationObject);
-  const { signature, attributes, notary_public_key } = attestationObject;
+  const { attributes, notary_public_key } = attestationObject;
 
   // const decodedAttestation: AttestationObject = {
   //   ...attestationObject,
@@ -216,7 +217,7 @@ export function generateNonce() {
   ).join('');
 }
 
-export { verify_attestation_signature };
+export { build_bbs_proof, verify_bbs_proof };
 
 export function parseSignature(input: string) {
   const regex = /\(([\dA-Fa-f]+)\)/;
@@ -396,6 +397,7 @@ export class Prover {
       await this.#prover.notarize(identity_commitment);
 
     const signedSession = JSON.parse(signedSessionString);
+    console.log('signedSession', signedSession);
 
     return signedSession;
   }
