@@ -3,10 +3,11 @@ import initWasm, {
   init_logging,
   LoggingLevel,
   LoggingConfig,
-  SignedSession as WasmSignedSession,
+  AttributeAttestation as WasmSignedSession,
   Transcript,
   verify_attestation_document,
-  verify_attestation_signature,
+  build_bbs_proof,
+  verify_bbs_proof,
   type Commit,
   type Reveal,
   Verifier as WasmVerifier,
@@ -22,7 +23,6 @@ import {
   AttestationObject,
   RemoteAttestation,
   Payload,
-  Attribute,
   DecodedData,
   NotaryRequest,
   NotaryConfig,
@@ -41,7 +41,6 @@ export type {
   AttestationObject,
   RemoteAttestation,
   Payload,
-  Attribute,
   DecodedData,
   NotaryRequest,
   NotaryConfig,
@@ -61,10 +60,25 @@ function pemToRawHex(pemString: string) {
   return Buffer.from(base64, 'base64').toString('hex').slice(-130);
 }
 
+export function buildSignedData(
+  attribute_name: string,
+  identity_commitment: string,
+) {
+  const attributeBytes = new Uint8Array(Buffer.from(attribute_name ?? ''));
+  const identityCommitmentBytes = new Uint8Array(
+    Buffer.from(identity_commitment ?? '', 'hex'),
+  );
+  const concatenatedBytes = new Uint8Array([
+    ...attributeBytes,
+    ...identityCommitmentBytes,
+  ]);
+  return Buffer.from(concatenatedBytes).toString('hex');
+}
+
 export async function decode_and_verify(
   attestationObject: AttestationObject,
   verify_signature_function: (
-    attribute_hex: string,
+    signed_data: string,
     signature: string,
     notary_public_key: string,
     hash_appdata: boolean,
@@ -74,60 +88,53 @@ export async function decode_and_verify(
   hex_notary_key: string;
   decodedAttestation: AttestationObject;
 }> {
-  const { signature, application_data, attributes } = attestationObject;
+  console.log('attestationObject', attestationObject);
+  const { attributes, notary_public_key } = attestationObject;
 
-  const decodedAttestation: AttestationObject = {
-    ...attestationObject,
-    application_data_decoded: decodeAppData(attestationObject.application_data),
-  };
+  // const decodedAttestation: AttestationObject = {
+  //   ...attestationObject,
+  //   application_data_decoded: decodeAppData(attestationObject.application_data),
+  // };
 
-  const hex_notary_key = await getHexNotaryKey(
-    attestationObject.meta?.notaryUrl ?? '',
-  );
+  //if (!application_data) throw new Error('binary_data is null');
+  //if (!attestationObject.signature) throw new Error('signature is null');
 
-  if (!application_data) throw new Error('binary_data is null');
-  if (!attestationObject.signature) throw new Error('signature is null');
+  const identity_commitments = attributes[0];
+  if (identity_commitments.length === 0)
+    throw new Error('No identity commitments found');
+  if (identity_commitments.length > 1)
+    throw new Error('Multiple identity commitments found');
 
-  let is_valid = true;
-  if (attributes) {
-    for (const attribute of attributes) {
-      const isValid_ = await verify_signature_function(
-        attribute.attribute_hex ?? '',
-        attribute.signature,
-        hex_notary_key,
-        false,
-      );
+  const is_valid = true;
 
-      if (!isValid_) {
-        is_valid = false;
-        break;
-      }
-    }
-    return {
-      is_valid,
-      hex_notary_key,
-      decodedAttestation,
-    };
-  } else {
-    try {
-      is_valid = await verify_signature_function(
-        application_data!,
-        signature!,
-        hex_notary_key,
-        true,
-      );
-    } catch (e) {
-      is_valid = false;
-    }
-  }
+  //TODO: verify signature, using verkey
+
   return {
     is_valid,
-    hex_notary_key,
-    decodedAttestation,
+    hex_notary_key: notary_public_key,
+    decodedAttestation: attestationObject,
   };
+
+  // else {
+  //   try {
+  //     is_valid = await verify_signature_function(
+  //       application_data!,
+  //       signature!,
+  //       notary_public_key,
+  //       true,
+  //     );
+  //   } catch (e) {
+  //     is_valid = false;
+  //   }
+  // }
+  // return {
+  //   is_valid,
+  //   hex_notary_key: notary_public_key,
+  //   decodedAttestation,
+  // };
 }
 
-export async function getHexNotaryKey(notaryUrl: string) {
+export async function getNotaryKeyFromUrl(notaryUrl: string) {
   const notary = NotaryServer.from(notaryUrl);
   return pemToRawHex(await notary.publicKey());
 }
@@ -210,7 +217,7 @@ export function generateNonce() {
   ).join('');
 }
 
-export { verify_attestation_signature };
+export { build_bbs_proof, verify_bbs_proof };
 
 export function parseSignature(input: string) {
   const regex = /\(([\dA-Fa-f]+)\)/;
@@ -280,6 +287,7 @@ export class Prover {
     maxRecvData?: number;
     id: string;
     commit?: Commit;
+    identity_commitment: string;
   }) {
     const {
       url,
@@ -291,6 +299,7 @@ export class Prover {
       notaryUrl,
       websocketProxyUrl,
       id,
+      identity_commitment,
     } = options;
     const hostname = new URL(url).hostname;
     const notary = NotaryServer.from(notaryUrl);
@@ -309,7 +318,7 @@ export class Prover {
       headers: headerToMap(headers),
       body,
     });
-    const notarized = await prover.notarize();
+    const notarized = await prover.notarize(identity_commitment);
 
     return notarized;
   }
@@ -349,7 +358,6 @@ export class Prover {
       headers?: { [key: string]: string };
       body?: any;
     },
-    semaphoreIdentity?: string,
   ): Promise<{
     status: number;
     headers: { [key: string]: string };
@@ -358,7 +366,6 @@ export class Prover {
     const { url, method = 'GET', headers = {}, body } = request;
     const hostname = new URL(url).hostname;
     const headerMap = headerToMap({
-      [SEMAPHORE_IDENTITY_HEADER]: semaphoreIdentity ?? '',
       Host: hostname,
       Connection: 'close',
       ...headers,
@@ -385,16 +392,12 @@ export class Prover {
     };
   }
 
-  async notarize(): Promise<AttestationObject> {
-    const signedSessionString = await this.#prover.notarize();
+  async notarize(identity_commitment: string): Promise<AttestationObject> {
+    const signedSessionString =
+      await this.#prover.notarize(identity_commitment);
 
     const signedSession = JSON.parse(signedSessionString);
-
-    signedSession.attributes = signedSession.attributes.map(
-      (attributes: string) => JSON.parse(attributes),
-    );
-
-    //console.log('signedSession', signedSession);
+    console.log('signedSession', signedSession);
 
     return signedSession;
   }

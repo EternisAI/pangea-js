@@ -89,7 +89,9 @@ export function Notarization(): ReactElement {
     console.timeEnd('submit');
     console.log(resp);
 
-    const session = await prover.notarize();
+    const exampleIdentityCommitment =
+      '0000000000000000000000000000000000000000000000000000000000000000';
+    const session = await prover.notarize(exampleIdentityCommitment);
 
     setApplicationData(session.application_data);
     setSignature(session.signature);

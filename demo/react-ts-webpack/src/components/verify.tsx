@@ -5,6 +5,7 @@ import {
   decode_and_verify,
   Attribute,
   DecodedData,
+  getIdentityCommitments,
 } from 'tlsn-js';
 import { CheckCircle, XCircle } from 'lucide-react';
 
@@ -58,9 +59,9 @@ export function VerifyAttributeAttestation(): ReactElement {
       setDecodedAttestation(decodedAttestation);
       setHexNotaryKey(hex_notary_key);
       setIsAttrAttestationValid(is_valid);
-    } catch (e) {
+    } catch (e: any) {
       setIsAttrAttestationValid(false);
-      return setError('Attestation is invalid');
+      return setError('Attestation is invalid: ' + e.toString());
     }
   };
 
@@ -71,6 +72,10 @@ export function VerifyAttributeAttestation(): ReactElement {
       setAttestationObject(e.target.value);
     } catch (e) {}
   };
+
+  const identity_commitments = getIdentityCommitments(
+    decodedAttestation?.attributes ?? [],
+  );
 
   return (
     <div>
@@ -125,6 +130,7 @@ export function VerifyAttributeAttestation(): ReactElement {
                   decoded_data={decodedAttestation.application_data_decoded}
                   attributes={decodedAttestation.attributes}
                   hex_notary_key={hexNotaryKey || ''}
+                  identity_commitments={identity_commitments}
                 />
               )}
           </div>
@@ -225,10 +231,12 @@ function CardAttestation({
   decoded_data,
   attributes,
   hex_notary_key,
+  identity_commitments,
 }: {
   decoded_data: DecodedData;
   attributes: Attribute[];
   hex_notary_key: string;
+  identity_commitments: string[];
 }) {
   const [showDetails, setShowDetails] = useState(false);
 
@@ -262,13 +270,13 @@ function CardAttestation({
           )}
         </CardContent>
 
-        {decoded_data.semaphore_identity_commitment && (
+        {identity_commitments.length === 1 && (
           <CardContent>
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
               Your Identity commitment
             </h3>
             <p className="mt-1 text-md text-gray-900 font-mono break-all">
-              {decoded_data.semaphore_identity_commitment}
+              {identity_commitments[0]}
             </p>
           </CardContent>
         )}

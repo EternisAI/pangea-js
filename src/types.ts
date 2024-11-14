@@ -23,14 +23,15 @@ export type ProofData = {
 
 export interface AttestationObject {
   version?: string;
+  notary_public_key: string; // hex representation of notary verifying key
+  signature: string; // BBS signature of the list of attributes
+  attributes: string[]; //attributes that were signed as byte arrays
+
   meta?: {
+    //legacy, to remove
     notaryUrl: string;
     websocketProxyUrl: string;
   };
-  signature: string; //signature of the application_data
-  application_data: string; //hex string representation of bytes data
-  application_data_decoded?: DecodedData;
-  attributes: Attribute[]; //attributes extracted from the application_data
 }
 
 export interface RemoteAttestation {
@@ -52,19 +53,12 @@ export interface Payload {
   nonce: string | null;
 }
 
-export type Attribute = {
-  attribute_name: string;
-  attribute_hex?: string;
-  signature: string;
-};
-
 export type DecodedData = {
   hostname: string;
   request_url: string;
   request: string; //contain headers
   response_header: string;
   response_body: string;
-  semaphore_identity_commitment: string;
 };
 
 export type NotaryRequest = {
